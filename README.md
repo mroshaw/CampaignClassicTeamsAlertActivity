@@ -107,7 +107,7 @@ To add the appropriate entry to the list, follow these steps:
 3. Paste in the content from `Data schemas\cusTeamsAlertActivity.xml`. Note that this is an XML schema, so there is no need to run “Update database structure”.
 4. Create a new `cus:teamsAlertActivityWorkflow` "Input forms" object, and paste in the content from `Input forms\cusTeamsAlertActivityWorkflow.xml`
 5. Locate and open the existing `xtk:workflow` Input Form object.
-6. Follow the instructions in `\Input Forms\xtkWorkflow.xml` to insert the palette and form entries.
+6. Follow the instructions in `Input Forms\xtkWorkflow.xml` to insert the palette and form entries.
 7. **Be VERY CAREFUL when doing this**! This is an out-of-the-box input form that drives the workflow UI, so you do not want to mess this up!
 8. Create a new `cus:teamsAlertActivity.js` "Javascript codes" object, with name `Teams Alert Activity`, and paste in the content from `Javascript codes\cusTeamsAlertActivity.js`.
 9. Clear the local cache, log out, log back in.
