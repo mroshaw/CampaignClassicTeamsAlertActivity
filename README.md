@@ -102,7 +102,7 @@ To add the appropriate entry to the list, follow these steps:
 
 ## Steps
 
-1. Create new `cus:teamsalertactivity16x16.png`. and `cus:teamsalertactivity48x48.png`"Images" objects, and upload the `Images\custeamsalertactivity16x16.png` and `Images\custeamsalertactivity48x48.png` files respectively.
+1. Create new `cus:teamsalertactivity16x16.png` and `cus:teamsalertactivity48x48.png`"Images" objects, and upload the `Images\custeamsalertactivity16x16.png` and `Images\custeamsalertactivity48x48.png` files respectively.
 2. Create a new `cus:teamsAlertActivityWorkflow` "Data schemas" object, extending the out-of-the-box `xtk:workflow` schema.
 3. Paste in the content from `Data schemas\cusTeamsAlertActivity.xml`. Note that this is an XML schema, so there is no need to run “Update database structure”.
 4. Create a new `cus:teamsAlertActivityWorkflow` "Input forms" object, and paste in the content from `Input forms\cusTeamsAlertActivityWorkflow.xml`
