@@ -120,10 +120,12 @@
   
   <!-- End of 'Teams Alert' activity -->
   
-  <!-- Add all new Activities into the workflow schema -->
-  <element hybrid="false" img="xtk:workflow.png" label="workflow" name="workflow">
-    <element hybrid="false" name="activities" xml="true">
-      <element hybrid="false" name="teamsAlertActivity" ref="teamsAlertActivity" unbound="true"/>
+  <!-- Add the new Activity into the workflow schema -->
+  <element name="teamsAlertActivityWorkflow">
+    <element name="activities">
+      <element name="teamsAlertActivity" ref="teamsAlertActivity"/>
     </element>
+  </element>
+
   </element>
 </srcSchema>
