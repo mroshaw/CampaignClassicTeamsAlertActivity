@@ -4,8 +4,8 @@
  * Created by: Iain Ollerenshaw
  *
  * This JavaScript underpins the "teamsAlert" custom workflow activity.
- * The core function of the activity is to send an "Alert" from a workflow to a Teams Channel
- * or Chat using the Teams 'Workflows' and 'WebHook' functionalities.
+ * The core function of the activity is send an "Alert" from a workflow to a Teams Channel
+ * using the Teams 'WebHook' functionality.
  *
  **/
 
@@ -48,7 +48,7 @@ function teamsAlertActivity_call() {
  * Returns:
  *
  * Integer - 0 for success, otherwise fail
- **/
+**/
 function teamsAlertActivity_recall() {
   // logInfo("teamsAlertActivity_recall");
 }
@@ -89,24 +89,24 @@ function processActivity() {
     var debugMode = activity.enableDebug;
 
     // Get the WebHookURL from specified option
-    if (webHookUrlOptionName == "") {
+    if(webHookUrlOptionName == "") {
       throw new Error("WebHook Option Name cannot be blank!");
     }
 
     var webHookUrl = getOption(webHookUrlOptionName);
 
-    if (debugMode) {
+    if(debugMode) {
       showDebugInfo();
     }
 
     // Get tag email addresses if required
     var mentionInfo = null;
 
-    if (tagPeople) {
+    if(tagPeople) {
       try {
         var tagOperators = assigneeType == 0 ? getAllOperatorsInGroup(operatorGroupId) : getOperatorEmail(operatorId);
         mentionInfo = buildTeamsMentions(tagOperators);
-        if (debugMode) {
+        if(debugMode) {
           logInfo("Tagging Emails: " + tagOperators);
           logInfo("MentionInfo.Text: " + mentionInfo.mentionText);
           logInfo("MentionInfo.Entities: " + JSON.stringify(mentionInfo.entities));
@@ -131,8 +131,9 @@ function processActivity() {
 
     sendTeamsAlert(webHookUrl, jsonPayload, debugMode);
 
-  } catch (e) {
-    throw (e);
+  }
+  catch(e) {
+    throw(e);
   }
 }
 
@@ -155,7 +156,7 @@ function buildTableData(tableColumnList, debugMode) {
   // Extract column definitions from the activity's tableColumnList
   var columns = [];
   var columnNodes = tableColumnList.tableColumn;
-  for each(var col in columnNodes) {
+  for each (var col in columnNodes) {
     columns.push({
       order: col.order || 0,
       headerName: col.headerName,
@@ -168,9 +169,7 @@ function buildTableData(tableColumnList, debugMode) {
     throw new Error("includeTable is true but no columns are defined in tableColumnList.");
   }
 
-  columns.sort(function(a, b) {
-    return a.order - b.order;
-  });
+  columns.sort(function(a, b) { return a.order - b.order; });
 
   if (debugMode) {
     logInfo("buildTableData: querying schema=" + vars.targetSchema + " table=" + vars.tableName);
@@ -178,548 +177,483 @@ function buildTableData(tableColumnList, debugMode) {
   }
 
   // Build a queryDef against the inbound work table
-  var selectNode = < select / > ;
-  for each(var col in columns) {
-    selectNode.appendChild( < node expr = {
-        col.attribAlias
-      }
-      />);
-    }
-
-    var queryXml = < queryDef schema = {
-      vars.targetSchema
-    }
-    operation = "select" > {
-        selectNode
-      } <
-      /queryDef>;
-
-    if (debugMode) {
-      logInfo("Query XML: " + queryXml.toXMLString());
-    }
-
-    var queryDef = xtk.queryDef.create(queryXml);
-
-    var result = queryDef.ExecuteQuery();
-
-    // Build row array
-    var rows = [];
-    for each(var record in result.*) {
-      var row = {};
-      for each(var col in columns) {
-        row[col.attribAlias] = record[col.attribAlias] || '';
-      }
-      rows.push(row);
-    }
-
-    if (debugMode) {
-      logInfo("buildTableData: retrieved " + rows.length + " rows");
-    }
-
-    return {
-      columns: columns,
-      rows: rows
-    };
+  var selectNode = <select/>;
+  for each (var col in columns) {
+    selectNode.appendChild(<node expr={col.attribAlias} />);
   }
 
-  /**
-   * Builds an Adaptive Card Table element from column definitions and row data.
-   *
-   * Parameters:
-   *
-   * columns  - array of { headerName, attribAlias }
-   * rows     - array of objects keyed by attribAlias
-   * debugMode - bool - true to debug, otherwise false
-   *
-   * Returns:
-   *
-   * Adaptive Card Table object
-   **/
-  function buildAdaptiveCardTable(columns, rows, tableStyle, debugMode) {
+  var queryXml = <queryDef schema={vars.targetSchema} operation="select">
+    {selectNode}
+  </queryDef>;
 
-    // Build header row
-    var headerCells = columns.map(function(col) {
-      return {
-        "type": "TableCell",
-        "items": [{
+  if(debugMode) {
+    logInfo("Query XML: " + queryXml.toXMLString());
+  }
+
+  var queryDef = xtk.queryDef.create(queryXml);
+
+  var result = queryDef.ExecuteQuery();
+
+  // Build row array
+  var rows = [];
+  for each (var record in result.*) {
+    var row = {};
+    for each (var col in columns) {
+      row[col.attribAlias] = record[col.attribAlias] || '';
+    }
+    rows.push(row);
+  }
+
+  if (debugMode) {
+    logInfo("buildTableData: retrieved " + rows.length + " rows");
+  }
+
+  return { columns: columns, rows: rows };
+}
+
+/**
+ * Builds an Adaptive Card Table element from column definitions and row data.
+ *
+ * Parameters:
+ *
+ * columns  - array of { headerName, attribAlias }
+ * rows     - array of objects keyed by attribAlias
+ * debugMode - bool - true to debug, otherwise false
+ *
+ * Returns:
+ *
+ * Adaptive Card Table object
+ **/
+function buildAdaptiveCardTable(columns, rows, tableStyle, debugMode) {
+
+  // Build header row
+  var headerCells = columns.map(function(col) {
+    return {
+      "type": "TableCell",
+      "items": [
+        {
           "type": "TextBlock",
           "text": col.headerName,
           "weight": "Bolder",
           "wrap": true
-        }]
-      };
-    });
+        }
+      ]
+    };
+  });
 
-    // Build data rows
-    var dataRows = rows.map(function(row) {
-      var cells = columns.map(function(col) {
-        return {
-          "type": "TableCell",
-          "items": [{
+  // Build data rows
+  var dataRows = rows.map(function(row) {
+    var cells = columns.map(function(col) {
+      return {
+        "type": "TableCell",
+        "items": [
+          {
             "type": "TextBlock",
             "text": String(row[col.attribAlias] || ''),
             "wrap": true
-          }]
-        };
-      });
-      return {
-        "type": "TableRow",
-        "cells": cells
+          }
+        ]
       };
     });
+    return {
+      "type": "TableRow",
+      "cells": cells
+    };
+  });
 
-    var tableElement = {
-      "type": "Table",
-      "firstRowAsHeaders": true,
-      "style": tableStyle,
-      "columns": columns.map(function(col) {
-        return {
-          "width": col.relativeWidth
-        };
-      }),
-      "rows": [{
+  var tableElement = {
+    "type": "Table",
+    "firstRowAsHeaders": true,
+    "style": tableStyle,
+    "columns": columns.map(function(col) {
+      return { "width": col.relativeWidth };
+    }),
+    "rows": [
+      {
         "type": "TableRow",
         "cells": headerCells,
-      }].concat(dataRows),
-      "spacing": "Medium"
-    };
+      }
+    ].concat(dataRows),
+    "spacing": "Medium"
+  };
 
-    if (debugMode) {
-      logInfo("buildAdaptiveCardTable: table element built with " + columns.length + " columns and " + rows.length + " data rows");
-    }
-
-    return tableElement;
+  if (debugMode) {
+    logInfo("buildAdaptiveCardTable: table element built with " + columns.length + " columns and " + rows.length + " data rows");
   }
 
-  /**
-   * Builds tagging/mentions JSON for tagging the list of users
-   *
-   * Parameters:
-   *
-   * tagOperators  - array of email addresses
-   *
-   * Returns:
-   *
-   * Mentions object
-   **/
-  function buildTeamsMentions(tagOperators) {
-    var mentions = [];
-    var mentionTextFragments = [];
+  return tableElement;
+}
 
-    for each(tagOperator in tagOperators) {
-      var email = String(tagOperator.email);
-      var displayName = stripDiacritics(String(tagOperator.name));
+/**
+ * Builds tagging/mentions JSON for tagging the list of users
+ *
+ * Parameters:
+ *
+ * tagOperators  - array of email addresses
+ *
+ * Returns:
+ *
+ * Mentions object
+ **/
+function buildTeamsMentions(tagOperators) {
+  var mentions = [];
+  var mentionTextFragments = [];
 
-      var atText = "<at>" + displayName + "</at>";
+  for each (tagOperator in tagOperators) {
+    var email = String(tagOperator.email);
+    var displayName = stripDiacritics(String(tagOperator.name));
 
-      mentionTextFragments.push(atText);
+    var atText = "<at>" + displayName + "</at>";
 
-      mentions.push({
-        "type": "mention",
-        "text": atText,
-        "mentioned": {
-          "id": email, // UPN works fine
-          "name": displayName
-        }
-      });
-    }
+    mentionTextFragments.push(atText);
 
-    return {
-      mentionText: mentionTextFragments.join(" "),
-      entities: mentions
-    };
+    mentions.push({
+      "type": "mention",
+      "text": atText,
+      "mentioned": {
+        "id": email,      // UPN works fine
+        "name": displayName
+      }
+    });
   }
 
-  /**
-   * Generates the JSON payload for a 'AdaptiveCard' type alert
-   *
-   * Parameters:
-   *
-   * webHookUrl -  the public URL exposed by the WebHook for the channel
-   * type - the type of message to send (i.e. MessageCard)
-   * theme - the theme colour as hex code
-   * summary - the summary header
-   * title - the post title text
-   * text - the post body text
-   * debugMode - bool - true to debug, otherwise false
-   *
-   * Returns:
-   *
-   * JSON payload string
-   *
-   **/
-  function getAdaptiveCardPayload(cardStyle, cardWidth, headerColour, heading, icon, subheading, alertText, tableElement, mentionInfo, debugMode) {
+  return {
+    mentionText: mentionTextFragments.join(" "),
+    entities: mentions
+  };
+}
 
-    var items = [{
-        "type": "ColumnSet",
-        "columns": [{
-            "type": "Column",
-            "items": [{
+/**
+ * Generates the JSON payload for a 'AdaptiveCard' type alert
+ *
+ * Parameters:
+ *
+ * webHookUrl -  the public URL exposed by the WebHook for the channel
+ * type - the type of message to send (i.e. MessageCard)
+ * theme - the theme colour as hex code
+ * summary - the summary header
+ * title - the post title text
+ * text - the post body text
+ * debugMode - bool - true to debug, otherwise false
+ *
+ * Returns:
+ *
+ * JSON payload string
+ *
+ **/
+function getAdaptiveCardPayload(cardStyle, cardWidth, headerColour, heading, icon, subheading, alertText, tableElement, mentionInfo, debugMode) {
+
+  var items = [
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "items": [
+            {
               "type": "Icon",
               "name": icon,
               "style": "Filled",
               "color": headerColour
-            }],
-            "width": "auto",
-          },
-          {
-            "type": "Column",
-            "width": "auto",
-            "items": [{
+            }
+          ],
+          "width": "auto",
+        },
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
               "type": "TextBlock",
               "text": heading,
               "wrap": true,
               "style": "heading",
               "color": headerColour,
               "size": "ExtraLarge"
-            }]
-          }
-        ],
-      },
-      {
-        "type": "TextBlock",
-        "text": subheading,
-        "wrap": true,
-        "spacing": "None",
-        "color": headerColour,
-        "weight": "Lighter",
-      },
-      {
-        "type": "TextBlock",
-        "text": alertText,
-        "color": "Default",
-        "wrap": true
-      }
-    ];
-
-    if (tableElement !== null) {
-      items.push({
-        "type": "Container",
-        "items": [tableElement]
-      });
+            }
+          ]
+        }
+      ],
+    },
+    {
+      "type": "TextBlock",
+      "text": subheading,
+      "wrap": true,
+      "spacing": "None",
+      "color": headerColour,
+      "weight": "Lighter",
+    },
+    {
+      "type": "TextBlock",
+      "text": alertText,
+      "color": "Default",
+      "wrap": true
     }
+  ];
+
+  if (tableElement !== null) {
+    items.push({
+      "type": "Container",
+      "items": [ tableElement ]
+    });
+  }
 
 
-    if (mentionInfo) {
-      items.push({
-        "type": "TextBlock",
-        "text": "FYI " + String(mentionInfo.mentionText),
-        "wrap": true,
-        "weight": "Bolder",
-        "spacing": "Medium"
-      });
-    }
+  if (mentionInfo) {
+    items.push({
+      "type": "TextBlock",
+      "text": "FYI " + String(mentionInfo.mentionText),
+      "wrap": true,
+      "weight": "Bolder",
+      "spacing": "Medium"
+    });
+  }
 
-    var payload = {
-      "type": "message",
-      "attachments": [{
+  var payload = {
+    "type": "message",
+    "attachments": [
+      {
         "contentType": "application/vnd.microsoft.card.adaptive",
         "content": {
           "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
           "type": "AdaptiveCard",
           "version": "1.5",
-          "msteams": {
-            "width": cardWidth,
-            "entities": mentionInfo ? mentionInfo.entities : []
-          },
-          "body": [{
-            "type": "Container",
-            "style": cardStyle,
-            "showBorder": true,
-            "roundedCorners": true,
-            "items": items
-          }],
+          "msteams": { "width": cardWidth ,
+                        "entities": mentionInfo ? mentionInfo.entities : []
+                     },
+          "body": [
+            {
+              "type": "Container",
+              "style": cardStyle,
+              "showBorder": true,
+              "roundedCorners": true,
+              "items": items
+            }
+          ],
           "speak": alertText
         }
-      }]
-    };
-
-    return payload;
-  }
-
-  /**
-   * Sends a payload to an MC Teams WebHook end point
-   *
-   * Parameters:
-   *
-   * webHookUrl -  the public URL exposed by the WebHook for the channel
-   * payload - the JSON payload
-   * debugMode - bool - true to debug, otherwise false
-   *
-   * Returns:
-   *
-   * Nothing
-   *
-   **/
-  function sendTeamsAlert(webHookUrl, payload, debugMode) {
-
-    logInfo("Sending Teams alert...");
-
-    // Serialize JSON
-    var requestBody = JSON.stringify(payload);
-
-    if (debugMode) {
-      logInfo("Payload JSON: " + requestBody);
-    }
-
-    // Prepare HTTP request
-    var request = new HttpClientRequest(webHookUrl);
-    request.method = "POST";
-    request.header["Content-Type"] = "application/json";
-    request.body = requestBody;
-
-    // Execute POST
-    request.execute();
-
-    // Read response from request object
-    var statusCode = request.response.code;
-    var responseBody = request.response.body;
-
-    request.disconnect();
-
-
-    // Log outcome
-    if (debugMode) {
-      logInfo("Teams webhook HTTP status: " + statusCode);
-      logInfo("Teams webhook response body: " + responseBody);
-    }
-
-    // check for non-HTTP 200/202 response and throw an exception
-    if (statusCode != 200 && statusCode != 202) {
-      throw new Error("Teams webhook call failed: " + responseBody);
-    } else {
-      logInfo("Teams alert sent successfully!");
-    }
-  }
-
-  /**
-   * Queries for the operator ID and returns the email address
-   *
-   * Parameters:
-   *
-   * operatorId - primary key of the operator
-   *
-   * Returns:
-   *
-   * emailAddress as an array of name,email string pairs
-   **/
-  function getOperatorEmail(operatorId, debugMode) {
-    var queryXml = < queryDef schema = "xtk:operator"
-    operation = "getIfExists" >
-      <
-      select >
-      <
-      node expr = '[@id]' / >
-      <
-      node expr = '[@label]' / >
-      <
-      node expr = '[@email]' / >
-      <
-      /select> <
-    where >
-      <
-      condition expr = {
-        "[@id]='" + operatorId + "'"
       }
-    /> < /
-    where > <
-      /queryDef>;
+    ]
+  };
 
-    if (debugMode) {
-      logInfo("Query XML: " + queryXml.toXMLString());
-    }
+  return payload;
+}
 
-    var queryDef = xtk.queryDef.create(queryXml);
-    var result = queryDef.ExecuteQuery();
+/**
+ * Sends a payload to an MC Teams WebHook end point
+ *
+ * Parameters:
+ *
+ * webHookUrl -  the public URL exposed by the WebHook for the channel
+ * payload - the JSON payload
+ * debugMode - bool - true to debug, otherwise false
+ *
+ * Returns:
+ *
+ * Nothing
+ *
+ **/
+function sendTeamsAlert(webHookUrl, payload, debugMode) {
 
-    if (result.@id.length() > 0) {
-      logInfo("Found!");
-      return [{
+  logInfo("Sending Teams alert...");
+
+  // Serialize JSON
+  var requestBody = JSON.stringify(payload);
+
+  if(debugMode) {
+    logInfo("Payload JSON: " + requestBody);
+  }
+
+  // Prepare HTTP request
+  var request = new HttpClientRequest(webHookUrl);
+  request.method = "POST";
+  request.header["Content-Type"] = "application/json";
+  request.body = requestBody;
+
+  // Execute POST
+  request.execute();
+
+  // Read response from request object
+  var statusCode = request.response.code;
+  var responseBody = request.response.body;
+
+  request.disconnect();
+
+
+  // Log outcome
+  if(debugMode) {
+    logInfo("Teams webhook HTTP status: " + statusCode);
+    logInfo("Teams webhook response body: " + responseBody);
+  }
+
+  // check for non-HTTP 200/202 response and throw an exception
+  if (statusCode != 200 && statusCode != 202) {
+    throw new Error("Teams webhook call failed: " + responseBody);
+  } else {
+    logInfo("Teams alert sent successfully!");
+  }
+}
+
+/**
+ * Queries for the operator ID and returns the email address
+ *
+ * Parameters:
+ *
+ * operatorId - primary key of the operator
+ *
+ * Returns:
+ *
+ * emailAddress as an array of name,email string pairs
+ **/
+function getOperatorEmail(operatorId, debugMode) {
+  var queryXml = <queryDef schema="xtk:operator" operation="getIfExists">
+    <select>
+      <node expr='[@id]' />
+      <node expr='[@label]' />
+      <node expr='[@email]' />
+    </select>
+    <where>
+    <condition expr={"[@id]='" + operatorId + "'"} />
+    </where>
+  </queryDef>;
+
+  if(debugMode) {
+    logInfo("Query XML: " + queryXml.toXMLString());
+  }
+
+  var queryDef = xtk.queryDef.create(queryXml);
+  var result = queryDef.ExecuteQuery();
+
+  if (result.@id.length() > 0) {
+    logInfo("Found!");
+    return [
+      {
         name: String(result.@label),
         email: String(result.@email)
-      }];
-    } else {
-      logInfo("Not Found!");
-      return [];
-    }
+      }
+    ];
+  } else {
+    logInfo("Not Found!");
+    return [];
+  }
+}
+
+/**
+ * Queries for the operator group ID and returns all the operator
+ * email addresses as an array
+ *
+ * Parameters:
+ *
+ * operatorGroupId - primary key of the operator group
+ *
+ * Returns:
+ *
+ * emailAddressArray as an array of name,email string pairs
+ **/
+function getAllOperatorsInGroup(operatorGroupId, debugMode) {
+  var queryXml = <queryDef schema="xtk:operatorGroup" operation="select">
+    <select>
+      <node expr='[@group-id]' />
+      <node expr='[@operator-id]' />
+      <node expr='[operator/@label]' />
+      <node expr='[operator/@email]' />
+    </select>
+    <where>
+    <condition expr={"[@group-id]='" + operatorGroupId + "'"} />
+    </where>
+  </queryDef>;
+
+  if(debugMode) {
+    logInfo("Query XML: " + queryXml.toXMLString());
   }
 
-  /**
-   * Queries for the operator group ID and returns all the operator
-   * email addresses as an array
-   *
-   * Parameters:
-   *
-   * operatorGroupId - primary key of the operator group
-   *
-   * Returns:
-   *
-   * emailAddressArray as an array of name,email string pairs
-   **/
-  function getAllOperatorsInGroup(operatorGroupId, debugMode) {
-    var queryXml = < queryDef schema = "xtk:operatorGroup"
-    operation = "select" >
-      <
-      select >
-      <
-      node expr = '[@group-id]' / >
-      <
-      node expr = '[@operator-id]' / >
-      <
-      node expr = '[operator/@label]' / >
-      <
-      node expr = '[operator/@email]' / >
-      <
-      /select> <
-    where >
-      <
-      condition expr = {
-        "[@group-id]='" + operatorGroupId + "'"
-      }
-    /> < /
-    where > <
-      /queryDef>;
+  var queryDef = xtk.queryDef.create(queryXml);
+  var result = queryDef.ExecuteQuery();
 
-    if (debugMode) {
-      logInfo("Query XML: " + queryXml.toXMLString());
-    }
+  var operators = [];
 
-    var queryDef = xtk.queryDef.create(queryXml);
-    var result = queryDef.ExecuteQuery();
-
-    var operators = [];
-
-    for each(operatorGroup in result) {
-      if (operatorGroup.operator.@email != "") {
-        operators.push({
+  for each(operatorGroup in result) {
+    if(operatorGroup.operator.@email != "") {
+      operators.push(
+        {
           name: String(operatorGroup.operator.@label),
           email: String(operatorGroup.operator.@email)
         });
-      }
     }
-
-    return operators;
   }
 
-  /**
-   * Swaps out diacritic characters so the Mentions can match up
-   * for user names containing such characters
-   *
-   * Parameters:
-   *
-   * originalString - Original text string
-   *
-   * Returns:
-   *
-   * result as a new string with replacements
-   **/
-  function stripDiacritics(originalString) {
-    var map = {
-      "Á": "A",
-      "À": "A",
-      "Â": "A",
-      "Ä": "A",
-      "Ã": "A",
-      "Å": "A",
-      "Ā": "A",
-      "á": "a",
-      "à": "a",
-      "â": "a",
-      "ä": "a",
-      "ã": "a",
-      "å": "a",
-      "ā": "a",
-      "É": "E",
-      "È": "E",
-      "Ê": "E",
-      "Ë": "E",
-      "Ē": "E",
-      "é": "e",
-      "è": "e",
-      "ê": "e",
-      "ë": "e",
-      "ē": "e",
-      "Í": "I",
-      "Ì": "I",
-      "Î": "I",
-      "Ï": "I",
-      "Ī": "I",
-      "í": "i",
-      "ì": "i",
-      "î": "i",
-      "ï": "i",
-      "ī": "i",
-      "Ó": "O",
-      "Ò": "O",
-      "Ô": "O",
-      "Ö": "O",
-      "Õ": "O",
-      "Ō": "O",
-      "ó": "o",
-      "ò": "o",
-      "ô": "o",
-      "ö": "o",
-      "õ": "o",
-      "ō": "o",
-      "Ú": "U",
-      "Ù": "U",
-      "Û": "U",
-      "Ü": "U",
-      "Ū": "U",
-      "ú": "u",
-      "ù": "u",
-      "û": "u",
-      "ü": "u",
-      "ū": "u",
-      "Ñ": "N",
-      "ñ": "n",
-      "Ç": "C",
-      "ç": "c",
-      "Ý": "Y",
-      "Ÿ": "Y",
-      "ý": "y",
-      "ÿ": "y"
-    };
+  return operators;
+}
 
-    var result = "";
-    for (var i = 0; i < originalString.length; i++) {
-      var ch = originalString.charAt(i);
-      result += map[ch] || ch;
-    }
+/**
+ * Swaps out diacritic characters so the Mentions can match up
+ * for Cristina!
+ *
+ * Parameters:
+ *
+ * originalString - Original text string
+ *
+ * Returns:
+ *
+ * result as a new string with replacements
+ **/
+function stripDiacritics(originalString) {
+  var map = {
+    "Á":"A","À":"A","Â":"A","Ä":"A","Ã":"A","Å":"A","Ā":"A",
+    "á":"a","à":"a","â":"a","ä":"a","ã":"a","å":"a","ā":"a",
+    "É":"E","È":"E","Ê":"E","Ë":"E","Ē":"E",
+    "é":"e","è":"e","ê":"e","ë":"e","ē":"e",
+    "Í":"I","Ì":"I","Î":"I","Ï":"I","Ī":"I",
+    "í":"i","ì":"i","î":"i","ï":"i","ī":"i",
+    "Ó":"O","Ò":"O","Ô":"O","Ö":"O","Õ":"O","Ō":"O",
+    "ó":"o","ò":"o","ô":"o","ö":"o","õ":"o","ō":"o",
+    "Ú":"U","Ù":"U","Û":"U","Ü":"U","Ū":"U",
+    "ú":"u","ù":"u","û":"u","ü":"u","ū":"u",
+    "Ñ":"N","ñ":"n",
+    "Ç":"C","ç":"c",
+    "Ý":"Y","Ÿ":"Y",
+    "ý":"y","ÿ":"y"
+  };
 
-    return result;
+  var result = "";
+  for (var i = 0; i < originalString.length; i++) {
+    var ch = originalString.charAt(i);
+    result += map[ch] || ch;
   }
 
-  /**
-   * Logs all activity parameters using logInfo
-   *
-   * Parameters:
-   *
-   * None
-   *
-   * Returns:
-   *
-   * Nothing
-   **/
-  function showDebugInfo() {
-    logInfo("***** DEBUGGING ENABLED. DEBUG PARAMETER LIST: *****");
+  return result;
+}
 
-    logInfo("WebHook Option: " + activity.webHookUrlOptionName);
-    logInfo("Card Style: " + activity.cardStyle);
-    logInfo("Card Width: " + activity.cardWidth);
-    logInfo("Header Colour: " + activity.headerColour);
-    logInfo("Icon: " + activity.icon);
-    logInfo("Header Text: " + activity.heading);
-    logInfo("Subheader Text: " + activity.subheading);
-    logInfo("Alert Text: " + activity.alertText);
-    logInfo("Include Table: " + activity.includeTable);
-    logInfo("Table Style: " + activity.tableStyle);
-    logInfo("Table Column List: " + activity.tableColumnList);
+/**
+ * Logs all activity parameters using logInfo
+ *
+ * Parameters:
+ *
+ * None
+ *
+ * Returns:
+ *
+ * Nothing
+ **/
+function showDebugInfo() {
+  logInfo("***** DEBUGGING ENABLED. DEBUG PARAMETER LIST: *****");
 
-    logInfo("Tag People: " + activity.tagPeople);
-    logInfo("Assignee Type: " + activity.assigneeType);
-    logInfo("Assignee: " + activity.assignee_id);
-    logInfo("Operator: " + activity.operator_id);
+  logInfo("WebHook Option: " + activity.webHookUrlOptionName);
+  logInfo("Card Style: " + activity.cardStyle);
+  logInfo("Card Width: " + activity.cardWidth);
+  logInfo("Header Colour: " + activity.headerColour);
+  logInfo("Icon: " + activity.icon);
+  logInfo("Header Text: " + activity.heading);
+  logInfo("Subheader Text: " + activity.subheading);
+  logInfo("Alert Text: " + activity.alertText);
+  logInfo("Include Table: " + activity.includeTable);
+  logInfo("Table Style: " + activity.tableStyle);
+  logInfo("Table Column List: " + activity.tableColumnList);
 
-    logInfo("***** END OF DEBUG PARAMETER LIST *****");
-  }
+  logInfo("Tag People: " + activity.tagPeople);
+  logInfo("Assignee Type: " + activity.assigneeType);
+  logInfo("Assignee: " + activity.assignee_id);
+  logInfo("Operator: " + activity.operator_id);
+
+  logInfo("***** END OF DEBUG PARAMETER LIST *****");
+}
