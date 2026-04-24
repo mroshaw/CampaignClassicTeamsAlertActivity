@@ -102,11 +102,13 @@ To add the appropriate entry to the Allow List, follow these steps:
 
 ## Steps
 
-1. Create a new `cus:teamsAlertActivity` "Data schemas" object, and paste in the content from `Data schemas\cusTeamsAlertActivity.xml`. Note that this is an XML schema, so there is no need to run “Update database structure”.
-2. Create a new `cus:teamsAlertActivity` "Input forms" object, and paste in the content from `Input forms\cusTeamsAlertActivity.xml`
-3. Locate and open the existing `xtk:workflow` Input Form object.
-4. Follow the instructions in `\Input Forms\xtkWorkflow.xml` to insert the palette and form entries.
-5. Be VERY CAREFUL when doing this! This is an out-of-the-box input form that drives the workflow UI, so you do not want to mess this up!
-6. Create a new `cus:teamsAlertActivity.js` "Javascript codes" object, and paste in the content from `Javascript codes\cusTeamsAlertActivity.js`.
-7. Clear the local cache, log out, log back in.
-8. The new activity should be available in the new "Custom" tab in the workflow palette.
+1. Create new `cus:teamsalertactivity16x16.png`. and `cus:teamsalertactivity48x48.png`"Images" objects, and upload the `Images\custeamsalertactivity16x16.png` and `Images\custeamsalertactivity48x48.png` files respectively.
+2. Create a new `cus:teamsAlertActivityWorkflow` "Data schemas" object, extending the out-of-the-box `xtk:workflow` schema.
+3. Paste in the content from `Data schemas\cusTeamsAlertActivity.xml`. Note that this is an XML schema, so there is no need to run “Update database structure”.
+4. Create a new `cus:teamsAlertActivityWorkflow` "Input forms" object, and paste in the content from `Input forms\cusTeamsAlertActivityWorkflow.xml`
+5. Locate and open the existing `xtk:workflow` Input Form object.
+6. Follow the instructions in `\Input Forms\xtkWorkflow.xml` to insert the palette and form entries.
+7. Be VERY CAREFUL when doing this! This is an out-of-the-box input form that drives the workflow UI, so you do not want to mess this up!
+8. Create a new `cus:teamsAlertActivity.js` "Javascript codes" object, with name `Teams Alert Activity`, and paste in the content from `Javascript codes\cusTeamsAlertActivity.js`.
+9. Clear the local cache, log out, log back in.
+10. The new activity should be available in the new "Custom" tab in the workflow palette.
