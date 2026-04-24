@@ -55,7 +55,7 @@ Double-click the activity to view the configuration. Configuration is split into
 | Include Table        | Check this if you want to include a table of information in the alert. The table appears below the alert text. |
 | Table Style*         | Only available if “Include Table” is checked. Specifies the colour accent to apply to the background of the table. |
 | Table Columns*       | Only available if “Include Table” is checked. Add a row here for each column that you want in the output table. The activity will generate a header row containing the labels you specify in each entry, and a row for each record in the dataset coming from the branch connected to the input of the activity. Each column value in a row is derived from the dataset by matching the column alias that you specify. You must specify an explicit order for the headers, and you can specify a relative width for each. |
-| Tag People           | Check this if you want to “mention” or tag operators or operator groups in the alert. |
+| Tag People           | Check this if you want to “mention” or tag operators or operator groups in the alert. Mentions appear, separated by spaces, at the bottom of the alert card. |
 | Tag Assignment Type* | Only available if Tag People is checked. Set the mention target to be either Operator or Operator Group. |
 | Operator*            | Only available if the “Operator” type is selected. Single Operator to mention in the alert. |
 | Operator Group*      | Only available if the “Operator Group” type is selected. All Operators in the group will be mentioned in the alert. |
