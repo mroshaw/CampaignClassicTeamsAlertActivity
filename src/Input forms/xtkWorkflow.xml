@@ -7,7 +7,7 @@
 <!-- Adds a new palette tab called 'Custom' -->
 <container img="xtk:new.png" label="Custom" name="customPalette">
     <!-- Teams Alert activity -->
-    <input img="cus:teamsalertactivity16x16.png" label="Custom Activity" xpath="teamsAlertActivity"/>
+    <input img="cus:teamsalertactivity16x16.png" label="Teams Alert" xpath="teamsAlertActivity"/>
 </container>
 
 <!-- Adds a reference to the new activity input form -->
@@ -15,5 +15,5 @@
 
 <!-- Start of Teams Alert Activity form -->
 <!-- The ref is important, and must correspond to: <namespace and name of input form>:<name of child form for the activity> -->
-<form name="teamsAlertActivity" ref="cus:teamsAlertActivity:teamsAlertActivity"/>
+<form name="teamsAlertActivity" ref="cus:teamsAlertActivityWorkflow:teamsAlertActivity"/>
 <!-- End of Teams Alert Activity form -->
