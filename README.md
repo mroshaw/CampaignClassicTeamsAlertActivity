@@ -49,7 +49,7 @@ Double-click the activity to view the configuration. Configuration is split into
 | Header Colour        | The colour accent to apply to the header, subheader and icon. Similar to style, colours are semantic rather than definitive colour values. Examples can be found in the [AdapativeCard TextBlock documentation](https://adaptivecards.microsoft.com/?topic=TextBlock). |
 | Card Width           | Can be set to “Full” to extend the width of the card in Teams, otherwise "Default" will automatically set the width. This is useful if including a table in the output. |
 | Heading              | The large text heading that appears at the top of the card.  |
-| Icon                 | A "Fluent Icon" that will appear to the left of the header. You can add more by creating additional entries in the `alertIcon` enumeration in the `cus:teamsActivity` schema. Supported icon names can be found in the [AdaptiveCard icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog). |
+| Icon                 | A "Fluent Icon" that will appear to the left of the header. You can add more by creating additional entries in the `alertIcon` enumeration in the `cus:teamsAlertActivityWorkflow` schema. Supported icon names can be found in the [AdaptiveCard icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog). |
 | Subheading           | The subheading text that will be displayed in a smaller font below the header. |
 | Alert Text           | The body text that will appear in the posted card.           |
 | Include Table        | Check this if you want to include a table of information in the alert. The table appears below the alert text. |
