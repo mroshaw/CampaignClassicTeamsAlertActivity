@@ -1,0 +1,19 @@
+<!-- IMPORTANT: This file contains XML that must be merged into the existing, out-of-the-box xtk:workflow input form -->
+
+<!-- Creates a new palette in the workflow UI -->
+<!-- This needs to be placed in the 'xtk:workflow' input form, as a direct child of the container named -->
+<!-- 'palette'. Look for this node: <container name="palette"> and paste this before the container node is closed. -->
+
+<!-- Adds a new palette tab called 'Custom' -->
+<container img="xtk:new.png" label="Custom" name="customPalette">
+    <!-- Teams Alert activity -->
+    <input img="cus:teamsalertactivity16x16.png" label="Custom Activity" xpath="teamsAlertActivity"/>
+</container>
+
+<!-- Adds a reference to the new activity input form -->
+<!-- IMPORTANT: this needs to be placed in the `xtk:workflow` input form, as a child of the 'subforms' container -->
+
+<!-- Start of Teams Alert Activity form -->
+<!-- The ref is important, and must correspond to: <namespace and name of input form>:<name of child form for the activity> -->
+<form name="teamsAlertActivity" ref="cus:teamsAlertActivity:teamsAlertActivity"/>
+<!-- End of Teams Alert Activity form -->
