@@ -70,11 +70,11 @@ To obtain the URL to use:
 
 1. In Teams, locate the Channel or Chat to which you want to post alerts.
 2. Click the 3-dots options icon and select “Workflows” from the menu.
-3. In “Find templates”, type “webhook” and select either “Send webhook alerts from to a chat”, or “Send webhook alerts from to a channel”
-4. Select the Team and Channel
+3. In “Find templates”, type “webhook” and select either “Send webhook alerts to a chat”, or “Send webhook alerts to a channel”
+4. Select the Team and channel/chat
 5. Click Save.
 6. Click “Copy webhook link” to copy the URL to your clipboard
-7. In Adobe Campaign, go to: Administration > Platform > Options and create a new record.
+7. In Adobe Campaign, go to: `Administration > Platform > Options` and create a new record.
 8. Give the Option a sensible internal name.
 9. Set the “Data type” to “Long text”. This is critical, as the WebHook URL generated is longer than the 255-character limit of a “Text” type.
 10. Paste the URL into the value field.
@@ -84,11 +84,11 @@ You can now use the internal name in the “WebHook Option” parameter.
 
 If you receive authentication errors in your workflow, double check that you’re using the “Long text” type and that you’ve pasted in the entire WebHook URL.
 
-### Adding the WebHook URL to the instance allowlist
+### Adding the WebHook URL to the instance URL Persmissions
 
-Adobe Campaign has a security feature that limits the use of “external URLs” in JavaScript, called [URL Permissions](https://experienceleague.adobe.com/en/docs/control-panel/using/instances-settings/url-permissions). This just means that the unique PowerAutomate environment that sits behind the WebHooks functionality must be added to this “Allow List” for each of the Adobe Campaign instances that will use the activity. This only needs to be done once for each Azure backend Teams environment.
+Adobe Campaign has a security feature that limits the use of “external URLs” in JavaScript, called [URL Permissions](https://experienceleague.adobe.com/en/docs/control-panel/using/instances-settings/url-permissions). This just means that the unique PowerAutomate environment that sits behind the WebHooks functionality must be added to the URL Permissions list for each of the Adobe Campaign instances that will use the activity. This only needs to be done once for each Azure backend Teams environment.
 
-To add the appropriate entry to the Allow List, follow these steps:
+To add the appropriate entry to the list, follow these steps:
 
 1. Log on to your [Adobe Campaign Control Panel](https://experience.adobe.com/#/controlpanel)
 2. Click Instance Settings > Manage
@@ -108,7 +108,7 @@ To add the appropriate entry to the Allow List, follow these steps:
 4. Create a new `cus:teamsAlertActivityWorkflow` "Input forms" object, and paste in the content from `Input forms\cusTeamsAlertActivityWorkflow.xml`
 5. Locate and open the existing `xtk:workflow` Input Form object.
 6. Follow the instructions in `\Input Forms\xtkWorkflow.xml` to insert the palette and form entries.
-7. Be VERY CAREFUL when doing this! This is an out-of-the-box input form that drives the workflow UI, so you do not want to mess this up!
+7. **Be VERY CAREFUL when doing this**! This is an out-of-the-box input form that drives the workflow UI, so you do not want to mess this up!
 8. Create a new `cus:teamsAlertActivity.js` "Javascript codes" object, with name `Teams Alert Activity`, and paste in the content from `Javascript codes\cusTeamsAlertActivity.js`.
 9. Clear the local cache, log out, log back in.
 10. The new activity should be available in the new "Custom" tab in the workflow palette.
