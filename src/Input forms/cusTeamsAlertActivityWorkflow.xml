@@ -1,0 +1,146 @@
+<srcSchema _cs="Teams Alert Activity Workflow (cus)"
+           desc="Workflow extension for Teams Alert Activity" entitySchema="xtk:srcSchema"
+           extendedSchema="xtk:workflow" img="xtk:workflow.png" label="Teams Alert Activity Workflow"
+           labelSingular="Teams Alert Activity Workflow"
+           name="teamsAlertActivityWorkflow" namespace="cus" xtkschema="xtk:srcSchema">
+ 
+ <!-- Adds the new 'Teams Alert' activity -->
+ 
+ <!-- Container style applied to the background of the card -->
+  <enumeration default="default" name="containerStyle">
+    <value name="Default" value="default"/>
+    <value name="Emphasis" value="emphasis"/>
+    <value name="Good" value="good"/>
+    <value name="Warning" value="warning"/>
+    <value name="Attention" value="attention"/>
+    <value name="Accent" value="accent"/>
+  </enumeration>
+  
+  <!-- MS Teams card width -->
+  <enumeration default="Default" name="cardWidth">
+    <value name="Default" value="Default"/>
+    <value name="Full" value="Full"/>
+  </enumeration>
+  
+  <!-- Header text colour -->
+  <!-- Note that capitalisation of the value is per MS specification -->
+  <enumeration default="Default" name="textColour">
+    <value name="Default" value="Default"/>
+    <value name="Dark" value="Dark"/>
+    <value name="Light" value="Light"/>
+    <value name="Good" value="Good"/>
+    <value name="Warning" value="Warning"/>
+    <value name="Attention" value="Attention"/>
+  </enumeration>
+
+  <enumeration default="Warning" name="alertIcon">
+    <value name="Warning" value="Warning"/>
+    <value name="Important" value="Important"/>
+    <value name="Database Warning" value="DatabaseWarning"/>
+    <value name="Mail Warning" value="MailWarning"/>
+    <value name="Globe Warning" value="GlobeWarning"/>
+    <value name="Error" value="ErrorCircle"/>
+    <value name="Info" value="Info"/>
+    <value name="Smile" value="EmojiSmileSlight"/>
+    <value name="ThumbLike" value="ThumbLike"/>
+  </enumeration>
+
+  <element hybrid="false" img="cus:teamsalertactivity48x48.png" label="Teams Alert" name="teamsAlertActivity"
+           template="xtk:workflow:activity">
+    <attribute default="'cus:teamsalertactivity48x48.png'" name="img"/>
+    <attribute default="'cus:teamsAlertActivity.js'" name="library"/>
+    <attribute default="false" name="andJoin" type="boolean"/>
+    <attribute default="true" name="distributable" type="boolean"/>
+    <attribute default="true" name="shouldSync" type="boolean"/>
+    
+    <!-- Used to debug, preventing anything being sent and increasing log levels -->
+    <attribute label="Debug Mode" name="enableDebug" type="boolean"/>
+    
+    <!-- Webhook URL -->
+    <!-- Current solution uses the Option, to protect the underlying WebHook secret -->
+    <!-- Keeping the actualy URL value in case we want to change this in future -->
+    <attribute label="WebHook URL" name="webHookUrl" required="true" type="string"/>
+    <attribute label="WebHook URL Option Name" name="webHookUrlOptionName" required="true"
+               type="string"/>
+    
+    <!-- Colour to use for the header, subheader text and icon -->
+    <attribute enum="textColour" label="Header Colour" name="headerColour" required="true"
+               type="string"/>
+    
+    <!-- Main container style -->
+    <attribute enum="containerStyle" label="Card Style" name="cardStyle" required="true"
+               type="string"/>
+    <attribute enum="cardWidth" label="Card Width" name="cardWidth" required="true"
+               type="string"/>
+    
+    <!-- Heading text - appears at the top of the Teams post -->
+    <attribute label="Heading" name="heading" required="true" type="string"/>
+    
+    <!-- Subheading text - appears as a subheading below the heading -->
+    <attribute label="Subheading" name="subheading" required="true" type="string"/>
+    
+    <!-- Alert text - the main body of the Teams post -->
+    <attribute label="Alert Text" name="alertText" required="true" type="string"/>
+    
+    <!-- Icon that appears on the left of the heading -->
+    <attribute enum="alertIcon" label="Icon" name="icon" required="true" type="string"/>
+    
+    <!-- Tick to indicate a table of results will be included in the alert -->
+    <attribute label="Include table" name="includeTable" required="true" type="boolean"/>
+    <attribute enum="containerStyle" label="Table Style" name="tableStyle" required="true"
+               type="string"/>
+    
+    <!-- List of table columns as headers and attribute alias pairs -->
+    <element hybrid="false" label="Table Columns" name="tableColumnList">
+      <element hybrid="false" name="tableColumn" unbound="true">
+        <key name="headerName">
+          <keyfield xpath="@headerName"/>
+        </key>
+        <attribute label="Order" name="order" type="short"/>
+        <attribute label="Header Name" name="headerName" type="string"/>
+        <attribute label="Value" name="attribAlias" type="string"/>
+        <attribute label="Relative Width" name="relativeWidth" type="short"/>
+      </element>
+    </element>
+    
+    <!-- Tagging: operator/group assignee (same pattern as OOB alert activity) -->
+    <attribute label="Tag People" name="tagPeople" required="true" type="boolean"/>
+    <attribute enum="xtk:workflow:assigneeType" label="Tag Assignment Type" name="assigneeType"
+               type="byte"/>
+    <element hybrid="false" label="Operator Group" name="assignee" required="false"
+             target="xtk:group" type="link"/>
+    <element hybrid="false" label="Operator" name="operator" required="false" target="xtk:operator"
+             type="link"/>
+    <element hybrid="false" label="Assignee Filter" name="assigneeFilter" required="false"
+             xml="true">
+      <attribute desc="Start schema of the dynamic condition" label="Schema" name="schema"
+                 type="string"/>
+      <element hybrid="false" label="Dynamic condition" name="where" ref="xtk:queryDef:where"/>
+      <attribute label="Label of the dynamic condition" localizable="true" name="humanCond"
+                 type="string"/>
+    </element>
+    
+    <!-- Standard OK and Error transitions -->
+    <element hybrid="false" name="transitions">
+      <element hybrid="false" name="done" template="xtk:workflow:transition">
+        <attribute name="label" translatedDefault="'Ok'"/>
+        <attribute default="true" name="enabled"/>
+      </element>
+      <element hybrid="false" name="error" template="xtk:workflow:transition">
+        <attribute name="label" translatedDefault="'Error'"/>
+        <attribute default="false" name="enabled"/>
+      </element>
+    </element>
+
+  </element>
+  
+  <!-- End of 'Teams Alert' activity -->
+  
+  <!-- Add the new Activity into the workflow schema -->
+  <element name="teamsAlertActivityWorkflow">
+    <element name="activities" xml="true">
+      <element name="teamsAlertActivity" ref="teamsAlertActivity" unbound="true"/>
+    </element>
+  </element>
+
+</srcSchema>
